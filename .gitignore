@@ -1,0 +1,42 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build
+dist/
+build/
+*.tsbuildinfo
+
+# Environment
+.env
+.env.*
+
+# Prisma
+prisma/dev.db
+prisma/dev.db-journal
+prisma/migrations/
+prisma/.env
+
+# Logs
+logs/
+*.log
+*.sqlite
+
+# Uploads
+uploads/
+*.zip
+
+# Docker
+docker-data/
+*.pid
+
+# VSCode/IDE
+.vscode/
+.idea/
+.DS_Store
+
+# OS
+Thumbs.db

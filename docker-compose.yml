@@ -1,0 +1,115 @@
+services:
+  postgres:
+    image: docker.io/library/postgres:15-alpine
+    container_name: chatbot-postgres
+    environment:
+      POSTGRES_DB: chatbot_platform
+      POSTGRES_USER: chatbot_user
+      POSTGRES_PASSWORD: chatbot_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/prisma/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - chatbot-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chatbot_user -d chatbot_platform"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  redis:
+    image: docker.io/library/redis:7-alpine
+    container_name: chatbot-redis
+    command: redis-server --appendonly yes --requirepass redis_password
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - chatbot-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "redis_password", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: chatbot-backend
+    environment:
+      DATABASE_URL: postgresql://chatbot_user:chatbot_password@postgres:5432/chatbot_platform
+      REDIS_URL: redis://:redis_password@redis:6379
+      JWT_SECRET: your-super-secret-jwt-key-for-development
+      JWT_REFRESH_SECRET: your-super-secret-refresh-key-for-development
+      ENCRYPTION_KEY: your-32-character-encryption-key-dev
+      NODE_ENV: development
+      PORT: 8000
+      CORS_ORIGIN: http://localhost:3000
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - chatbot-network
+    volumes:
+      - ./backend/logs:/app/logs
+      - ./backend/uploads:/app/uploads
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: chatbot-frontend
+    environment:
+      VITE_API_BASE_URL: http://localhost:8000/api
+      VITE_APP_ENV: development
+    ports:
+      - "3000:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - chatbot-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  nginx:
+    image: docker.io/library/nginx:alpine
+    container_name: chatbot-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - chatbot-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  chatbot-network:
+    driver: bridge
