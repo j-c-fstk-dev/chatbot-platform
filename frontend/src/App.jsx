@@ -47,7 +47,7 @@ function App() {
       return
     }
 
-    const userMessage = { role: 'user', content: input, timestamp: new Date() }
+    const userMessage = { role: 'user', content: input, timestamp: new Date(), model: selectedModel }
     setMessages(prev => [...prev, userMessage])
     setInput('')
     setIsLoading(true)
@@ -86,7 +86,7 @@ function App() {
   }
 
   const clearChat = () => {
-    if (confirm('Tem certeza que deseja limpar todo o histórico de chat?')) {
+    if (window.confirm('Tem certeza que deseja limpar todo o histórico de chat?')) {
       setMessages([])
     }
   }
@@ -128,140 +128,63 @@ function App() {
   const selectedModelInfo = models.find(m => m.id === selectedModel)
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${
-      darkMode ? 'dark bg-gray-900' : 'bg-gray-50'
-    }`}>
-      <div className="container mx-auto max-w-4xl h-screen flex flex-col">
-        {/* Header */}
-        <header className={`border-b transition-colors duration-300 ${
-          darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
-        }`}>
-          <div className="flex items-center justify-between p-4">
-            <div className="flex items-center space-x-3">
-              <Bot className={`w-8 h-8 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`} />
-              <div>
-                <h1 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                  ChatBot Platform
-                </h1>
-                {selectedModelInfo && (
-                  <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                    {selectedModelInfo.name} ({selectedModelInfo.provider})
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={() => setDarkMode(!darkMode)}
-                className={`p-2 rounded-lg transition-colors ${
-                  darkMode
-                    ? 'hover:bg-gray-700 text-gray-300'
-                    : 'hover:bg-gray-100 text-gray-600'
-                }`}
-                title="Alternar tema"
-              >
-                {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-              </button>
-
-              <button
-                onClick={clearChat}
-                className={`p-2 rounded-lg transition-colors ${
-                  darkMode
-                    ? 'hover:bg-gray-700 text-gray-300'
-                    : 'hover:bg-gray-100 text-gray-600'
-                }`}
-                title="Limpar chat"
-              >
-                <Trash2 className="w-5 h-5" />
-              </button>
-
-              <button
-                onClick={exportChat}
-                className={`p-2 rounded-lg transition-colors ${
-                  darkMode
-                    ? 'hover:bg-gray-700 text-gray-300'
-                    : 'hover:bg-gray-100 text-gray-600'
-                }`}
-                title="Exportar chat"
-              >
-                <Download className="w-5 h-5" />
-              </button>
-
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className={`p-2 rounded-lg transition-colors ${
-                  darkMode
-                    ? 'hover:bg-gray-700 text-gray-300'
-                    : 'hover:bg-gray-100 text-gray-600'
-                }`}
-                title="Importar chat"
-              >
-                <Upload className="w-5 h-5" />
-              </button>
-
-              <button
-                onClick={() => setShowSettings(!showSettings)}
-                className={`p-2 rounded-lg transition-colors ${
-                  darkMode
-                    ? 'hover:bg-gray-700 text-gray-300'
-                    : 'hover:bg-gray-100 text-gray-600'
-                }`}
-                title="Configurações"
-              >
-                <Settings className="w-5 h-5" />
-              </button>
+    <div className={`chat-container${darkMode ? ' dark' : ''}`}>
+      {/* Header */}
+      <header className="chat-header">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <Bot className="logo" />
+            <div>
+              <h1 style={{ fontWeight: 700, fontSize: '1.25rem' }}>ChatBot Platform</h1>
+              {selectedModelInfo && (
+                <p style={{ fontSize: '0.875rem', color: darkMode ? '#9ca3af' : '#6b7280' }}>
+                  {selectedModelInfo.name} ({selectedModelInfo.provider})
+                </p>
+              )}
             </div>
           </div>
-
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".json"
-            onChange={importChat}
-            className="hidden"
-          />
-        </header>
-
-        {/* Settings Panel */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <button onClick={() => setDarkMode(!darkMode)} className="icon-btn" title="Alternar tema">
+              {darkMode ? <Sun /> : <Moon />}
+            </button>
+            <button onClick={clearChat} className="icon-btn" title="Limpar chat">
+              <Trash2 />
+            </button>
+            <button onClick={exportChat} className="icon-btn" title="Exportar chat">
+              <Download />
+            </button>
+            <button onClick={() => fileInputRef.current?.click()} className="icon-btn" title="Importar chat">
+              <Upload />
+            </button>
+            <button onClick={() => setShowSettings(!showSettings)} className="icon-btn" title="Configurações">
+              <Settings />
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".json"
+              onChange={importChat}
+              className="hidden"
+            />
+          </div>
+        </div>
         {showSettings && (
-          <div className={`border-b p-4 transition-colors duration-300 ${
-            darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
-          }`}>
-            <div className="space-y-4">
+          <div className="settings-panel">
+            <div className="settings-grid">
               <div>
-                <label className={`block text-sm font-medium mb-2 ${
-                  darkMode ? 'text-gray-300' : 'text-gray-700'
-                }`}>
-                  API Key
-                </label>
+                <label>API Key</label>
                 <input
                   type="password"
                   value={apiKey}
                   onChange={(e) => setApiKey(e.target.value)}
                   placeholder="Insira sua API key (OpenAI, Anthropic ou Google)"
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-                    darkMode
-                      ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
-                      : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
-                  }`}
                 />
               </div>
-
               <div>
-                <label className={`block text-sm font-medium mb-2 ${
-                  darkMode ? 'text-gray-300' : 'text-gray-700'
-                }`}>
-                  Modelo
-                </label>
+                <label>Modelo</label>
                 <select
                   value={selectedModel}
                   onChange={(e) => setSelectedModel(e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-                    darkMode
-                      ? 'bg-gray-700 border-gray-600 text-white'
-                      : 'bg-white border-gray-300 text-gray-900'
-                  }`}
                 >
                   {models.map(model => (
                     <option key={model.id} value={model.id}>
@@ -270,129 +193,85 @@ function App() {
                   ))}
                 </select>
               </div>
-
-              <div className="flex space-x-2">
-                <button
-                  onClick={saveSettings}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Salvar
-                </button>
+              <div style={{ gridColumn: 'span 2', display: 'flex', gap: '0.5rem' }}>
+                <button onClick={saveSettings} className="btn-primary">Salvar</button>
                 {apiKey && (
-                  <button
-                    onClick={() => setShowSettings(false)}
-                    className={`px-4 py-2 rounded-lg transition-colors ${
-                      darkMode
-                        ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                    }`}
-                  >
-                    Cancelar
-                  </button>
+                  <button onClick={() => setShowSettings(false)} className="btn-secondary">Cancelar</button>
                 )}
               </div>
             </div>
           </div>
         )}
+      </header>
 
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {messages.length === 0 ? (
-            <div className={`text-center py-12 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-              <Bot className="w-16 h-16 mx-auto mb-4 opacity-50" />
-              <h3 className="text-lg font-medium mb-2">Bem-vindo ao ChatBot Platform!</h3>
-              <p>Configure sua API key e comece a conversar com IA.</p>
-            </div>
-          ) : (
-            messages.map((message, index) => (
-              <div
-                key={index}
-                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                <div className={`flex max-w-[80%] ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-                  <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-                    message.role === 'user'
-                      ? 'bg-blue-600 ml-3'
-                      : message.isError
-                        ? 'bg-red-600 mr-3'
-                        : 'bg-gray-600 mr-3'
-                  }`}>
-                    {message.role === 'user' ? (
-                      <User className="w-4 h-4 text-white" />
-                    ) : (
-                      <Bot className="w-4 h-4 text-white" />
-                    )}
-                  </div>
-
-                  <div className={`rounded-lg px-4 py-2 ${
-                    message.role === 'user'
-                      ? 'bg-blue-600 text-white'
-                      : message.isError
-                        ? darkMode ? 'bg-red-900 text-red-200' : 'bg-red-100 text-red-800'
-                        : darkMode ? 'bg-gray-700 text-gray-100' : 'bg-white text-gray-900 border'
-                  }`}>
-                    <div className="whitespace-pre-wrap">{message.content}</div>
-                    <div className={`text-xs mt-1 opacity-70 ${
-                      message.role === 'user' ? 'text-blue-100' : 'text-gray-500'
-                    }`}>
-                      {message.timestamp.toLocaleTimeString()}
-                      {message.model && ` • ${models.find(m => m.id === message.model)?.name}`}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))
-          )}
-
-          {isLoading && (
-            <div className="flex justify-start">
-              <div className="flex">
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-600 mr-3 flex items-center justify-center">
-                  <Bot className="w-4 h-4 text-white" />
-                </div>
-                <div className={`rounded-lg px-4 py-2 ${
-                  darkMode ? 'bg-gray-700 text-gray-100' : 'bg-white text-gray-900 border'
-                }`}>
-                  <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div ref={messagesEndRef} />
-        </div>
-
-        {/* Input */}
-        <div className={`border-t p-4 transition-colors duration-300 ${
-          darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
-        }`}>
-          <form onSubmit={handleSubmit} className="flex space-x-2">
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Digite sua mensagem..."
-              disabled={isLoading}
-              className={`flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-                darkMode
-                  ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
-                  : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
-              } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-            />
-            <button
-              type="submit"
-              disabled={isLoading || !input.trim()}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+      {/* Chat messages */}
+      <main className="chat-messages">
+        {messages.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '3rem 0', color: darkMode ? '#9ca3af' : '#6b7280' }}>
+            <Bot className="logo" style={{ opacity: 0.5, marginBottom: '1rem' }} />
+            <h3 style={{ fontSize: '1.125rem', fontWeight: 500, marginBottom: '0.5rem' }}>
+              Bem-vindo ao ChatBot Platform!
+            </h3>
+            <p>Configure sua API key e comece a conversar com IA.</p>
+          </div>
+        ) : (
+          messages.map((message, index) => (
+            <div
+              key={index}
+              className={`message ${message.role}${message.isError ? ' error' : ''}`}
             >
-              <Send className="w-5 h-5" />
-            </button>
-          </form>
-        </div>
-      </div>
+              <div className="message-avatar">
+                {message.role === 'user' ? <User /> : <Bot />}
+              </div>
+              <div className="message-content">
+                <div className="message-text">{message.content}</div>
+                <div className="message-meta">
+                  {message.timestamp && typeof message.timestamp === "object"
+                    ? message.timestamp.toLocaleTimeString()
+                    : ""}
+                  {message.model && ` • ${models.find(m => m.id === message.model)?.name}`}
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+        {isLoading && (
+          <div className="message assistant">
+            <div className="message-avatar">
+              <Bot />
+            </div>
+            <div className="message-content typing-indicator">
+              <div className="typing-dots">
+                <div className="typing-dot"></div>
+                <div className="typing-dot"></div>
+                <div className="typing-dot"></div>
+              </div>
+            </div>
+          </div>
+        )}
+        <div ref={messagesEndRef} />
+      </main>
+
+      {/* Chat input */}
+      <footer className="chat-input">
+        <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '0.5rem' }}>
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Digite sua mensagem..."
+            disabled={isLoading}
+            className="chat-input-field"
+          />
+          <button
+            type="submit"
+            disabled={isLoading || !input.trim()}
+            className="chat-input-send"
+          >
+            <Send />
+          </button>
+        </form>
+      </footer>
     </div>
   )
 }
